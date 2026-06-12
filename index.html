@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <style>
+        /* This section styles the page (CSS) */
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: white;
+            text-align: center;
+        }
+
+        /* --- EDIT YOUR BACKGROUND IMAGE HERE --- */
+        .bg {
+            background-image: url('IMG_20260219_224641_059.jpg.jpeg'); /* Replace with your image path */
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            
+            /* This adds a dark overlay so your text is easier to read */
+            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5);
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        /* Timer Styling */
+        #countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* Quote Styling */
+        #quote-box {
+            font-size: 1.5rem;
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 80px;
+            transition: opacity 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg">
+        <div class="container">
+            <h1>Almost time...</h1>
+            
+            <div id="countdown">Loading timer...</div>
+            
+            <div id="quote-box">"You are my today and all of my tomorrows."</div>
+        </div>
+    </div>
+
+    <script>
+        /* This section runs the logic (JavaScript) */
+
+        // --- 1. SET THE BIRTHDAY DATE HERE ---
+        // Format: "Month Day, Year Hours:Minutes:Seconds"
+        const countdownDate = new Date("June 20, 2026 00:00:00").getTime();
+
+        // --- 2. ADD YOUR QUOTES HERE ---
+        // This is just like a Python list of strings!
+        const quotes = [
+            "You are my today and all of my tomorrows.",
+            "Every moment with you is a gift.",
+            "I can't wait to celebrate you.",
+            "Counting down the seconds until your special day."
+        ];
+
+        // --- TIMER LOGIC ---
+        const timer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
+
+            // Math to calculate days, hours, minutes and seconds
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Display the result
+            document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+            // If the countdown is over, show a message
+            if (distance < 0) {
+                clearInterval(timer);
+                document.getElementById("countdown").innerHTML = "HAPPY BIRTHDAY!";
+            }
+        }, 1000);
+
+        // --- ROTATING QUOTE LOGIC ---
+        let quoteIndex = 0;
+        const quoteBox = document.getElementById("quote-box");
+
+        setInterval(function() {
+            quoteIndex = (quoteIndex + 1) % quotes.length;
+            quoteBox.style.opacity = 0; // Fade out
+            
+            setTimeout(function() {
+                quoteBox.innerHTML = quotes[quoteIndex];
+                quoteBox.style.opacity = 1; // Fade in
+            }, 500); // Wait half a second before fading back in
+        }, 5000); // Change quote every 5 seconds
+
+    </script>
+</body>
+</html>
