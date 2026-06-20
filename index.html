@@ -4,77 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Happy Birthday!</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
-        /* This section styles the page (CSS) */
         body, html {
             height: 100%;
             margin: 0;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             color: white;
             text-align: center;
+            overflow: hidden; 
         }
 
-        /* --- EDIT YOUR BACKGROUND IMAGE HERE --- */
+        #enter-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            cursor: pointer;
+            transition: opacity 1s ease;
+        }
+        #enter-screen h2 {
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+
         .bg {
-            background-image: url('IMG_20260219_224641_059.jpg.jpeg'); /* Replace with your image path */
+            background-image: url('5.jpeg'); 
             height: 100%;
             background-position: center;
             background-repeat: no-repeat;
             background-size: cover;
-            
-            /* This adds a dark overlay so your text is easier to read */
-            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5);
-            
+            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.6); 
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            transition: all 2s ease;
         }
 
         .container {
             padding: 20px;
+            z-index: 10;
         }
 
-        /* Timer Styling */
-        #countdown {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
+        h1 { font-size: 3rem; margin-bottom: 10px; transition: opacity 1s; }
+        #countdown { font-size: 3rem; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; transition: opacity 1s; }
+        #quote-box { font-size: 1.5rem; font-style: italic; max-width: 600px; margin: 0 auto; min-height: 80px; transition: opacity 0.5s ease-in-out; }
+
+        #slideshow-container {
+            display: none;
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        #slideshow-img {
+            max-width: 80vw;
+            max-height: 50vh;
+            border: 10px solid white; 
+            border-bottom: 30px solid white;
+            border-radius: 5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: opacity 1s ease;
         }
 
-        /* Quote Styling */
-        #quote-box {
-            font-size: 1.5rem;
-            font-style: italic;
-            max-width: 600px;
-            margin: 0 auto;
-            min-height: 80px;
-            transition: opacity 0.5s ease-in-out;
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
         }
     </style>
 </head>
 <body>
 
+    <div id="enter-screen" onclick="startExperience()">
+        <h2>Tap to open your surprise... 🤍</h2>
+    </div>
+
+    <audio id="bday-song" loop>
+        <source src="pehli mohabbat.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="bg">
         <div class="container">
-            <h1>Almost time...</h1>
+            <h1 id="main-title">Almost time...</h1>
             
             <div id="countdown">Loading timer...</div>
             
             <div id="quote-box">"You are my today and all of my tomorrows."</div>
+
+            <div id="slideshow-container">
+                <img id="slideshow-img" src="" alt="Memory">
+            </div>
         </div>
     </div>
 
     <script>
-        /* This section runs the logic (JavaScript) */
-
-        // --- 1. SET THE BIRTHDAY DATE HERE ---
-        // Format: "Month Day, Year Hours:Minutes:Seconds"
         const countdownDate = new Date("June 20, 2026 00:00:00").getTime();
-
-        // --- 2. ADD YOUR QUOTES HERE ---
-        // This is just like a Python list of strings!
+        
         const quotes = [
             "Time spend with you is called quality time 🩵",
             "You are my today and all of my tomorrows.",
@@ -83,41 +114,109 @@
             "Counting down the seconds until your special day."
         ];
 
-        // --- TIMER LOGIC ---
+        const photos = [
+            "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpeg", "6.jpg", 
+            "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", 
+            "13.jpg", "14.jpg", "15.jpg", "16.jpg", "17.jpg", "18.jpg"
+        ];
+
+        let hasStarted = false;
+        let isMidnight = false;
+
+        function startExperience() {
+            if (hasStarted) return;
+            hasStarted = true;
+            
+            const enterScreen = document.getElementById("enter-screen");
+            enterScreen.style.opacity = "0";
+            setTimeout(() => enterScreen.style.display = "none", 1000);
+
+            const now = new Date().getTime();
+            if (countdownDate - now <= 0) {
+                triggerMidnightSurprise();
+            } else {
+                startQuotes();
+            }
+        }
+
         const timer = setInterval(function() {
             const now = new Date().getTime();
             const distance = countdownDate - now;
 
-            // Math to calculate days, hours, minutes and seconds
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            if (distance >= 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+            }
 
-            // Display the result
-            document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
-
-            // If the countdown is over, show a message
-            if (distance < 0) {
+            // FIXED: Only trigger if they have clicked to start, and remove the premature isMidnight=true
+            if (distance < 0 && !isMidnight && hasStarted) {
                 clearInterval(timer);
-                document.getElementById("countdown").innerHTML = "HAPPY BIRTHDAY!";
+                triggerMidnightSurprise();
             }
         }, 1000);
 
-        // --- ROTATING QUOTE LOGIC ---
-        let quoteIndex = 0;
-        const quoteBox = document.getElementById("quote-box");
-
-        setInterval(function() {
-            quoteIndex = (quoteIndex + 1) % quotes.length;
-            quoteBox.style.opacity = 0; // Fade out
+        function triggerMidnightSurprise() {
+            if (isMidnight) return; 
+            isMidnight = true;
             
-            setTimeout(function() {
-                quoteBox.innerHTML = quotes[quoteIndex];
-                quoteBox.style.opacity = 1; // Fade in
-            }, 500); // Wait half a second before fading back in
-        }, 5000); // Change quote every 5 seconds
+            document.getElementById("main-title").innerHTML = "🩵 🎉 HAPPY BIRTHDAY SHARMII! 🎉 🩵";
+            document.getElementById("countdown").style.display = "none";
+            document.getElementById("quote-box").style.display = "none";
 
+            const song = document.getElementById("bday-song");
+            song.play().catch(e => console.log("Audio play failed: ", e));
+
+            var duration = 15 * 1000; 
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+            const slideContainer = document.getElementById("slideshow-container");
+            const slideImg = document.getElementById("slideshow-img");
+            
+            slideContainer.style.display = "block";
+            setTimeout(() => slideContainer.style.opacity = "1", 100);
+
+            let photoIndex = 0;
+            slideImg.src = photos[photoIndex]; 
+
+            setInterval(() => {
+                slideImg.style.opacity = "0"; 
+                setTimeout(() => {
+                    photoIndex = (photoIndex + 1) % photos.length;
+                    slideImg.src = photos[photoIndex];
+                    slideImg.style.opacity = "1"; 
+                }, 1000); 
+            }, 4000); 
+        }
+
+        function startQuotes() {
+            let quoteIndex = 0;
+            const quoteBox = document.getElementById("quote-box");
+            setInterval(function() {
+                if(isMidnight) return; 
+                quoteIndex = (quoteIndex + 1) % quotes.length;
+                quoteBox.style.opacity = 0; 
+                setTimeout(function() {
+                    if(!isMidnight) {
+                        quoteBox.innerHTML = quotes[quoteIndex];
+                        quoteBox.style.opacity = 1; 
+                    }
+                }, 500); 
+            }, 5000); 
+        }
     </script>
 </body>
 </html>
