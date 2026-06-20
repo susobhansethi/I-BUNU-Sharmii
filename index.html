@@ -25,12 +25,46 @@
             justify-content: center;
             align-items: center;
             z-index: 50;
-            cursor: pointer;
             transition: opacity 1s ease;
         }
-        #enter-screen h2 {
+        
+        .start-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .start-content h2 {
             font-size: 2rem;
             animation: pulse 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        /* --- NEW BUTTON STYLING --- */
+        .music-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .music-buttons button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .music-buttons button:hover {
+            background-color: white;
+            color: #111;
+            transform: scale(1.05);
         }
 
         .bg {
@@ -81,13 +115,19 @@
 </head>
 <body>
 
-    <div id="enter-screen" onclick="startExperience()">
-        <h2>Tap to open your surprise... 🤍</h2>
+    <!-- Updated Enter Screen with Buttons -->
+    <div id="enter-screen">
+        <div class="start-content">
+            <h2>Choose your music to unlock the surprise... 🤍</h2>
+            <div class="music-buttons">
+                <button onclick="selectMusic('pehli mohabbat.mp3')">Pehli Mohabbat</button>
+                <button onclick="selectMusic('Ajeeb_O_Gareeb_m+f.mp3')">Ajeeb O Gareeb</button>
+            </div>
+        </div>
     </div>
 
-    <audio id="bday-song" loop>
-        <source src="pehli mohabbat.mp3" type="audio/mpeg">
-    </audio>
+    <!-- Hidden audio player (Source is now set by the buttons) -->
+    <audio id="bday-song" loop></audio>
 
     <div class="bg">
         <div class="container">
@@ -123,14 +163,21 @@
         let hasStarted = false;
         let isMidnight = false;
 
-        function startExperience() {
+        // NEW FUNCTION: Sets the song based on the button clicked
+        function selectMusic(songFile) {
             if (hasStarted) return;
             hasStarted = true;
             
+            // Set the audio source dynamically
+            const song = document.getElementById("bday-song");
+            song.src = songFile;
+
+            // Fade out the entry screen
             const enterScreen = document.getElementById("enter-screen");
             enterScreen.style.opacity = "0";
             setTimeout(() => enterScreen.style.display = "none", 1000);
 
+            // Check the time and start the experience
             const now = new Date().getTime();
             if (countdownDate - now <= 0) {
                 triggerMidnightSurprise();
@@ -151,7 +198,6 @@
                 document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
             }
 
-            // FIXED: Only trigger if they have clicked to start, and remove the premature isMidnight=true
             if (distance < 0 && !isMidnight && hasStarted) {
                 clearInterval(timer);
                 triggerMidnightSurprise();
